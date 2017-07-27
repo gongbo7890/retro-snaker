@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <!--<script type="text/javascript" src='bootstrap.js'></script>-->
+  <link rel="stylesheet" href="bootstrap.min.css" type="text/css"/>
+  <script>
+  var map;
+  var snake;
+  var timer;
+  var food;
+  var sum=0;
+  // var c;
+  var Box = document.getElementsByClassName('box')
+
+  function Map () {
+    this.width = 800
+    this.height = 400
+    this.position = 'absolute'
+    this.color = '#000'
+    this._map = null
+    this.show = function () {
+      this._map = document.createElement('div')
+      this._map.style.width = this.width + 'px'
+      this._map.style.height = this.height + 'px'
+      this._map.position = this.position
+      this._map.style.backgroundColor = this.color
+      Box[0].appendChild(this._map)  
+    }
+  }
+  function Food (){
+    this.width = 20
+    this.height = 20
+    this.position = 'absolute'
+    this.color = '#0000E3'
+    this._food = null
+    this.x=0
+    this.y=0
+    this.show = function () {
+      if(this.food == null){
+        this._food = document.createElement('div')
+        this._food.style.width = this.width + 'px'
+        this._food.style.height = this.height + 'px'
+        this._food.style.position = this.position
+        this._food.style.backgroundColor = this.color
+        Box[0].appendChild(this._food)
+      }
+        this.x = parseInt(Math.random()*40)
+        this.y = parseInt(Math.random()*20)
+        this._food.style.left = this.x*this.width+'px';
+        this._food.style.top = this.y*this.height+'px';
+
+      for (var i=0; i<snake.body.length; i++) {
+        if(this.x == snake.body[i][0] && this.y == snake.body[i][1]){
+           this.show()
+        }
+      }
+    }
+  }
+  function Snake () {
+    this.width = 20
+    this.height = 20
+    this.position = 'absolute'
+    this.direct = 'right'
+    this.body = [[10,2,'#FF0000',null],[9,2,'#9AFF02',null],[8,2,'#9AFF02',null]]
+
+    this.show = function () {
+      for (var i=0; i<this.body.length; i++) {
+        if (this.body[i][3] == null) {
+          this.body[i][3] = document.createElement('div')
+          this.body[i][3].style.height = this.height + 'px'
+          this.body[i][3].style.width = this.width + 'px'
+          this.body[i][3].style.position = this.position
+          this.body[i][3].style.backgroundColor = this.body[i][2]
+          map._map.appendChild(this.body[i][3])
+        }
+        this.body[i][3].style.left = this.body[i][0]*20 + 'px'
+        this.body[i][3].style.top = this.body[i][1]*20 + 'px'
+      }
+    }
+    this.setDirect = function (code) {
+      switch(code){
+        case 37 :
+          this.direct = 'left'
+          break
+        case 38 :
+          this.direct = 'up'
+          break
+        case 39 :
+          this.direct = 'right'
+          break
+        case 40 :
+          this.direct = 'down'
+          break
+      }
+    }
+    this.move = function () {
+      var length = this.body.length -1
+
+      for(var i = length ; i>0 ; i-- ){
+        this.body[i][0] = this.body[i-1][0]
+        this.body[i][1] = this.body[i-1][1]
+      }
+      switch(this.direct){
+        case 'right' :
+          this.body[0][0] = this.body[0][0] + 1
+          break
+        case 'down' :
+          this.body[0][1] = this.body[0][1] + 1
+          break
+        case 'left' :
+          this.body[0][0] = this.body[0][0] - 1
+          break
+        case 'up' :
+          this.body[0][1] = this.body[0][1] - 1
+          break
+        default :
+          return
+      }
+      if(this.body[0][0]<0 || this.body[0][1]<0 || this.body[0][0] > 39 || this.body[0][1] >19){
+        alert('GAME OVER')
+        clearTimeout(timer);
+        return
+      }
+      for(var i=1 ;i<this.body.length; i++){
+        if(this.body[0][0] == this.body[i][0] && this.body[0][1] == this.body[i][1]){
+          alert('GAME OVER')
+          clearInterval(timer)
+          return
+        }
+      }
+      if(this.body[0][0] == food.x && this.body[0][1] == food.y){
+        var x = this.body[length][0]
+        var y = this.body[length][1]
+        var Sum = document.getElementById("sumInput")
+        // alert('吃到食物')
+          this.body.push([x,y,'#0000E3',null]);
+          sum ++
+          Sum.value = sum
+          // console.log(food, this)
+          food._food.parentNode.removeChild(food._food)
+          food.show();
+       } 
+      this.show ()
+    }
+  }
+  
+  window.onload = function () {
+      map = new Map()
+      map.show()
+
+      snake = new Snake()
+      snake.show()
+
+      food = new Food()
+      food.show()
+      // timer = setInterval('')
+      document.onkeydown = function () {
+          var code;
+          if (window.event) {
+              code = window.event.keyCode;
+          } else {
+              code = event.keyCode;
+          }
+          if (code == 37 && snake.direct == 'right') {
+            return 
+          }
+          if (code == 38 && snake.direct == 'down') {
+            return
+          }
+          if (code == 39 && snake.direct == 'left') {
+            return
+          }
+          if (code == 40 && snake.direct == 'up') {
+            return
+          }
+          snake.setDirect(code);
+      };    
+  }
+  
+
+  function gameStart () {
+    if (!timer) {
+      timer = setInterval(function () {
+        snake.move()
+      }, 200)
+    }
+  }
+  function gameOver () {
+    clearInterval(timer)
+    timer = null
+  }
+
+  </script>
+</head>
+<body style="border:0;margin:0;">
+  <div class="box" style="margin-left:400px;position:relative"></div>
+
+  <div class="boxOther" style="position:relative;margin: 0 auto">
+  <input type="text" id="sumInput" class="form-control" style="width:10%;position:absolute;top:20px;left:700px" placeholder="0">
+   <!--<input type="text" id="txt" class="form-control" style="width:10%;position:absolute;top:120px;left:700px" placeholder="time">-->
+  <button onclick="gameStart()" class="btn btn-success" style="position:absolute;top:60px;left:725px">开始</button>
+  <button onclick="gameOver()" class="btn btn-danger" style="position:absolute;top:60px;left:798px">结束</button>
+  </div>
+</body>
+</html>
+<!--
+
+1、开始、结束按钮
+2、随机生成的DIV不能在蛇身上
+3、相反方向 return false
+4、计时
+
+
+-->
